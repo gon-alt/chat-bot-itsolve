@@ -69,7 +69,7 @@ const MENUS = {
 };
 
 const CLOSING_TEXT = `\n\n─────────────────\n¿Querés que un asesor te contacte para coordinar una llamada?\n\n*1* · ✅ Sí, quiero que me llamen\n*2* · ❌ No, gracias`;
-const AGENT_TEXT = `👤 *Conectando con un asesor...*\n\nEn breve Gonzalo se va a comunicar con vos.\n\n🕐 Lunes a viernes: 18:00 – 21:00 hs\n🕐 Sábados: 10:00 – 14:00 hs`;
+const AGENT_TEXT = `👤 *Conectando con un asesor...*\n\nEn breve Gonzalo se va a comunicar con vos.\n\n🕐 Lunes a viernes: 11:00 – 19:00 hs\n🕐 Sábados: 10:00 – 14:00 hs`;
 const UNKNOWN_TEXT = `🤖 No entendí tu mensaje.\n\nEscribí *hola* para ver el menú o *asesor* para hablar con alguien.`;
 
 module.exports = { TRIGGERS, AGENT_TRIGGERS, MAIN_MENU_TEXT, MENUS, CLOSING_TEXT, AGENT_TEXT, UNKNOWN_TEXT };
