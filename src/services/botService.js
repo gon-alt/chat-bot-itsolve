@@ -3,8 +3,10 @@ const { getOrCreateSession, navigateTo, goBack, goHome } = require("./sessionSer
 const { saveTicket, saveLead, saveCallRequest, generateTicketId } = require("./sheetsService");
 const {
   TRIGGERS, AGENT_TRIGGERS, MAIN_MENU_TEXT,
-  MENUS, CLOSING_TEXT, AGENT_TEXT, UNKNOWN_TEXT,
+  MENUS, CLOSING_TEXT, AGENT_TEXT, UNKNOWN_TEXT, BOT_WA_INFO,
 } = require("../config/menu");
+
+const BOT_WA_CLOSING = `\n\n─────────────────\n¿Querés que te contactemos para armar una propuesta?\n\n*1* · ✅ Sí, quiero que me contacten\n*2* · ❌ No, gracias`;
 
 async function handleMessage(phone, rawText) {
   const text = rawText.trim().toLowerCase();
@@ -22,7 +24,7 @@ async function handleMessage(phone, rawText) {
     return [AGENT_TEXT];
   }
 
-  // FIX: TRIGGERS verificados ANTES del bloque agent para que "hola" salga del loop
+  // TRIGGERS verificados ANTES del bloque agent para que "hola" salga del loop
   if (TRIGGERS.some((t) => text.includes(t))) {
     goHome(session);
     return [MAIN_MENU_TEXT];
@@ -30,17 +32,16 @@ async function handleMessage(phone, rawText) {
 
   // ── PANTALLA: AGENT ─────────────────────────────────────────────────────────
   if (session.screen === "agent") {
-    return [`👤 Ya estás en contacto con Gonzalo. Si querés volver al bot escribí *hola*.\n\n_Horario: Lun-Vie 18-21 hs / Sáb 10-14 hs._`];
+    return [`👤 Ya estás en contacto con Gonzalo. Si querés volver al bot escribí *hola*.\n\n📌 Te respondemos según la prioridad de tu caso.`];
   }
 
-  // ── PANTALLA: MAIN ─────────────────────────────────────────────────────────
+  // ── PANTALLA: MAIN ──────────────────────────────────────────────────────────
   if (session.screen === "main") {
     switch (text) {
       case "1":
         navigateTo(session, "soporte");
         return [MENUS.soporte.intro, MENUS.soporte.fields[0].ask];
       case "2":
-        // FIX: Presupuesto ahora tiene submenú previo
         navigateTo(session, "presupuesto_submenu");
         return [MENUS.presupuesto.submenuText];
       case "3":
@@ -60,13 +61,33 @@ async function handleMessage(phone, rawText) {
       goBack(session);
       return [MAIN_MENU_TEXT];
     }
+
+    // Caso especial: Bot WA muestra info antes del formulario
+    if (text === "3") {
+      navigateTo(session, "bot_wa_info");
+      session.formData.tipo_presupuesto = "Bot de WhatsApp";
+      return [BOT_WA_INFO + BOT_WA_CLOSING];
+    }
+
     const opcion = MENUS.presupuesto.submenuOptions[text];
     if (!opcion) return [`❌ Opción inválida.\n\n${MENUS.presupuesto.submenuText}`];
 
-    // Guarda el tipo de presupuesto elegido y arranca el formulario
     navigateTo(session, "presupuesto");
     session.formData.tipo_presupuesto = opcion;
     return [MENUS.presupuesto.intro, MENUS.presupuesto.fields[0].ask];
+  }
+
+  // ── PANTALLA: BOT WA INFO ───────────────────────────────────────────────────
+  if (session.screen === "bot_wa_info") {
+    if (text === "1") {
+      navigateTo(session, "presupuesto");
+      return [MENUS.presupuesto.intro, MENUS.presupuesto.fields[0].ask];
+    }
+    if (text === "2") {
+      goHome(session);
+      return [`👍 ¡Entendido! Si necesitás algo más escribí *hola*.`];
+    }
+    return [`Por favor respondé *1* para continuar o *2* para volver al menú.${BOT_WA_CLOSING}`];
   }
 
   // ── PANTALLA: FORMULARIO SOPORTE ────────────────────────────────────────────
@@ -86,9 +107,8 @@ async function handleMessage(phone, rawText) {
     });
   }
 
-  // ── PANTALLA: CONSULTAS GENERALES ──────────────────────────────────────────
+  // ── PANTALLA: CONSULTAS GENERALES ───────────────────────────────────────────
   if (session.screen === "consultas") {
-    // FIX: "0" vuelve al submenú de consultas, no al main
     if (text === "0") {
       return [MENUS.consultas.text];
     }
@@ -104,7 +124,6 @@ async function handleMessage(phone, rawText) {
 
   // ── PANTALLA: PLANES ────────────────────────────────────────────────────────
   if (session.screen === "planes") {
-    // FIX: "0" vuelve al submenú de planes, no al main
     if (text === "0") {
       return [MENUS.planes.text];
     }
@@ -121,7 +140,6 @@ async function handleMessage(phone, rawText) {
   // ── PANTALLA: CIERRE FINAL ──────────────────────────────────────────────────
   if (session.screen === "closing") {
     if (text === "0") {
-      // Vuelve al submenú de origen si existe
       const back = session.closingBack;
       if (back && MENUS[back]) {
         navigateTo(session, back);
@@ -135,20 +153,20 @@ async function handleMessage(phone, rawText) {
       goHome(session);
       session.screen = "agent";
       return [
-        `✅ *¡Perfecto!* Gonzalo se va a comunicar con vos a la brevedad.\n\n🕐 Horario: Lun-Vie 18-21 hs / Sáb 10-14 hs\n\nSi necesitás algo más escribí *hola*.`,
+        `✅ *¡Perfecto!* Gonzalo se va a comunicar con vos a la brevedad.\n\n📌 Te respondemos según la prioridad de tu caso.\n\nSi necesitás algo más escribí *hola*.`,
       ];
     }
     if (text === "2") {
       goHome(session);
       return [`👍 ¡Entendido! Si necesitás algo más, escribí *hola* para volver al menú.`];
     }
-    return [`Por favor respondé *1* para que te llamemos o *2* para finalizar.${CLOSING_TEXT}`];
+    return [`Por favor respondé *1* para que te contactemos o *2* para finalizar.${CLOSING_TEXT}`];
   }
 
   return [UNKNOWN_TEXT];
 }
 
-// ── FORMULARIOS PASO A PASO ─────────────────────────────────────────────────
+// ── FORMULARIOS PASO A PASO ──────────────────────────────────────────────────
 async function handleForm(session, phone, text, rawText, menuConfig, onComplete) {
   const fields = menuConfig.fields;
   const step = session.formStep;
@@ -173,7 +191,6 @@ async function handleForm(session, phone, text, rawText, menuConfig, onComplete)
     session.formData[currentField.key] = chosen;
   } else {
     const raw = rawText.trim();
-    // FIX: validación numérica para campos marcados como numeric
     if (currentField.numeric) {
       if (!/^\d+$/.test(raw)) {
         return [`❌ Por favor ingresá un número válido.\n\n${currentField.ask}`];
