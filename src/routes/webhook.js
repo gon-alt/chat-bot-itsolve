@@ -75,4 +75,26 @@ router.post("/", async (req, res) => {
   }
 });
 
+// ── POST /chatwoot-webhook — Respuestas del asesor desde Chatwoot ─────────────
+router.post("/chatwoot", async (req, res) => {
+  res.sendStatus(200);
+  try {
+    const body = req.body;
+
+    // Solo procesar mensajes salientes del asesor (no del bot)
+    if (body.message_type !== "outgoing") return;
+    if (body.conversation?.meta?.sender?.type === "agent_bot") return;
+
+    const content = body.content;
+    const phone = body.conversation?.meta?.sender?.phone_number?.replace("+", "");
+
+    if (!phone || !content) return;
+
+    console.log(`[Chatwoot] Asesor → ${phone}: "${content}"`);
+    await sendText(phone, content);
+  } catch (err) {
+    console.error("[Chatwoot] Error procesando respuesta:", err);
+  }
+});
+
 module.exports = router;

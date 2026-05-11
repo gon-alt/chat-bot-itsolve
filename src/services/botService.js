@@ -6,6 +6,8 @@ const {
   MENUS, CLOSING_TEXT, AGENT_TEXT, UNKNOWN_TEXT, BOT_WA_INFO,
 } = require("../config/menu");
 
+const { escalateToAgent, sendMessage: sendToChatwoot } = require("./chatwootService");
+
 const BOT_WA_CLOSING = `\n\n─────────────────\n¿Querés que te contactemos para armar una propuesta?\n\n*1* · ✅ Sí, quiero que me contacten\n*2* · ❌ No, gracias`;
 
 async function handleMessage(phone, rawText) {
@@ -21,8 +23,11 @@ async function handleMessage(phone, rawText) {
   if (AGENT_TRIGGERS.some((t) => text.includes(t))) {
     goHome(session);
     session.screen = "agent";
+    if (!session.chatwootConvId) {
+      session.chatwootConvId = await escalateToAgent(phone, `📲 Usuario solicitó hablar con un asesor.\nTeléfono: +${phone}`);
+    }
     return [AGENT_TEXT];
-  }
+  } 
 
   // TRIGGERS verificados ANTES del bloque agent para que "hola" salga del loop
   if (TRIGGERS.some((t) => text.includes(t))) {
@@ -32,7 +37,10 @@ async function handleMessage(phone, rawText) {
 
   // ── PANTALLA: AGENT ─────────────────────────────────────────────────────────
   if (session.screen === "agent") {
-    return [`👤 Ya estás en contacto con Gonzalo. Si querés volver al bot escribí *hola*.\n\n📌 Te respondemos según la prioridad de tu caso.`];
+    if (session.chatwootConvId) {
+      await sendToChatwoot(session.chatwootConvId, rawText, "incoming");
+    }
+    return [`👤 Tu mensaje fue enviado al asesor. Te respondemos a la brevedad.`];
   }
 
   // ── PANTALLA: MAIN ──────────────────────────────────────────────────────────
@@ -152,6 +160,12 @@ async function handleMessage(phone, rawText) {
       await saveCallRequest(phone, session.closingOrigin || "bot");
       goHome(session);
       session.screen = "agent";
+      if (!session.chatwootConvId) {
+        session.chatwootConvId = await escalateToAgent(
+          phone,
+          `📋 *Solicitud de contacto*\nOrigen: ${session.closingOrigin || "bot"}\nTeléfono: +${phone}`
+        );
+      }
       return [
         `✅ *¡Perfecto!* Gonzalo se va a comunicar con vos a la brevedad.\n\n📌 Te respondemos según la prioridad de tu caso.\n\nSi necesitás algo más escribí *hola*.`,
       ];
