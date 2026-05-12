@@ -63,10 +63,10 @@ const MENUS = {
   planes: {
     label: "Ver planes mensuales",
     type: "submenu",
-    text: `📋 *Planes mensuales*\n\n¿Cuál querés conocer?\n\n*1* · 🥉 Plan Básico — $100.000/mes\n*2* · 🥈 Plan Pro — $150.000/mes\n*3* · 🥇 Plan Premium — $250.000/mes\n\n*0* · Volver  |  *00* · Menú principal`,
+    text: `📋 *Planes mensuales*\n\n¿Cuál querés conocer?\n\n*1* · 🥉 Plan Básico — $100.000/mes\n*2* · 🥈 Plan Pro — $200.000/mes\n*3* · 🥇 Plan Premium — $250.000/mes\n\n*0* · Volver  |  *00* · Menú principal`,
     options: {
       "1": { label: "Plan Básico", text: `🥉 *Plan Básico — $100.000/mes*\n_Para el que quiere dejar de apagar incendios_\n\n✅ Soporte remoto — cuando algo falla, te atendemos\n✅ Backup en la nube — configuración inicial\n✅ Antivirus gestionado — Windows Defender configurado\n✕ Resumen mensual\n✕ Visita presencial\n✕ Monitoreo de red\n✕ Reclamo al ISP` },
-      "2": { label: "Plan Pro",    text: `🥈 *Plan Pro — $150.000/mes*\n_Para el que no puede permitirse que algo falle_\n\n✅ Soporte remoto — cuando algo falla, te atendemos\n✅ Backup en la nube — monitoreo mensual\n✅ Antivirus gestionado — Microsoft Defender for Business\n✅ Resumen mensual — de tu infraestructura\n✅ Visita presencial — 2 por mes\n✅ Monitoreo de red — en tiempo real\n✕ Reclamo al ISP` },
+      "2": { label: "Plan Pro",    text: `🥈 *Plan Pro — $200.000/mes*\n_Para el que no puede permitirse que algo falle_\n\n✅ Soporte remoto — cuando algo falla, te atendemos\n✅ Backup en la nube — monitoreo mensual\n✅ Antivirus gestionado — Microsoft Defender for Business\n✅ Resumen mensual — de tu infraestructura\n✅ Visita presencial — 2 por mes\n✅ Monitoreo de red — en tiempo real\n✕ Reclamo al ISP` },
       "3": { label: "Plan Premium", text: `🥇 *Plan Premium — $250.000/mes*\n_Para el que quiere olvidarse de la tecnología para siempre_\n\n✅ Soporte remoto — cuando algo falla, te atendemos\n✅ Backup en la nube — monitoreo + alertas automáticas\n✅ Antivirus gestionado — solución profesional con panel XDR\n✅ Resumen mensual — detallado con métricas\n✅ Visita presencial — sin límite\n✅ Monitoreo de red — con informe mensual detallado\n✅ Le peleamos a tu ISP — gestionamos el reclamo por vos` },
     },
   },
